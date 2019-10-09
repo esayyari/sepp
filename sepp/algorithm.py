@@ -234,7 +234,7 @@ class AbstractAlgorithm(object):
             _LOG.warning(
                 ("Input alignment size larger than total number of sequences!"
                  "  Setting alignment size to %d") % total)
-
+        options.placement_size = options.alignment_size
         _LOG.info(
             "Decomposition Sizes are set to alignment: %d placement: %d" %
             (options.alignment_size, options.placement_size))

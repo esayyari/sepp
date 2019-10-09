@@ -678,7 +678,8 @@ def main():
     augment_parser()
     sepp.config._options_singelton = sepp.config._parse_options()
     if (options().alignment_size is None):
-        options().alignment_size = int(total_taxa / 10)
+        options().alignment_size = 1000
+    options().placement_size = 1000
     input = options().fragment_file.name
     output_directory = options().outdir
     build_profile(input, output_directory)
