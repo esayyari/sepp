@@ -73,14 +73,14 @@ def load_taxonomy(taxonomy_file, lower=True):
 def build_profile(input, output_directory):
     global taxon_map, level_map, key_map, levels
     temp_dir = tempfile.mkdtemp(dir=options().__getattribute__('tempdir'))
-    if (options().bin == 'blast'):
+    if (options().bin == 'blast') and not options().run_profiling:
         binned_fragments = blast_to_markers(input, temp_dir)
-    else:
+    elif not options().run_profiling:
         binned_fragments = hmmer_to_markers(input, temp_dir)
 
-    if binned_fragments:
+    if not options().run_profiling and binned_fragments:
         print("Finished binning")
-    else:
+    elif not options().run_profiling:
         print("Unable to bin any fragments!\n")
         return
 
@@ -100,88 +100,88 @@ def build_profile(input, output_directory):
     gene_name = 'sate'
     if (options().genes == 'cogs'):
         gene_name = 'pasta'
-    for (gene, frags) in binned_fragments.items():
+    if not options().run_profiling:
+        for (gene, frags) in binned_fragments.items():
         # Get size of each marker
-        total_taxa = 0
-        with open(os.path.join(options().__getattribute__('reference').path,
-                  'refpkg/%s.refpkg/%s.size' % (gene, gene_name)), 'r') as f:
-            total_taxa = int(f.readline().strip())
-        decomp_size = options().alignment_size
-        if (decomp_size > total_taxa):
-            decomp_size = int(total_taxa / 10)
-        cpus = options().cpu
-        if (len(frags) < cpus):
-            cpus = len(frags)
-        extra = ''
-        if options().dist is True:
-            extra = '-D'
-        if options().max_chunk_size is not None:
-            extra = extra + '-F %d' % options().max_chunk_size
-        if options().cutoff != 0:
-            extra = extra+" -C %f" % options().cutoff
-        print(
-            ('Cmd:\nrun_tipp.py -c %s --cpu %s -m %s -f %s -t %s -adt %s -a '
-             '%s -r %s -tx %s -txm %s -at %0.2f -pt %0.2f -A %d -P %d -p %s '
-             '-o %s -d %s %s') %
-            (options().config_file.name,
-             cpus,
-             options().molecule,
-             temp_dir+"/%s.frags.fas.fixed" % gene,
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/%s.taxonomy' % (gene, gene_name)),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/%s.tree' % (gene, gene_name)),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/%s.fasta' % (gene, gene_name)),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/%s.taxonomy.RAxML_info' % (
-                            gene, gene_name)),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/all_taxon.taxonomy' % gene),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/species.mapping' % gene),
-             options().alignment_threshold,
-             0,
-             decomp_size,
-             total_taxa,
-             temp_dir+"/temp_file",
-             "tipp_%s" % gene,
-             output_directory+"/markers/",
-             extra))
-
-        os.system(
-            ('run_tipp.py -c %s --cpu %s -m %s -f %s -t %s -adt %s -a %s -r %s'
-             ' -tx %s -txm %s -at %0.2f -pt %0.2f -A %d -P %d -p %s -o %s -d '
-             '%s %s') %
-            (options().config_file.name,
-             cpus,
-             options().molecule,
-             temp_dir+"/%s.frags.fas.fixed" % gene,
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/%s.taxonomy' % (gene, gene_name)),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/%s.tree' % (gene, gene_name)),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/%s.fasta' % (gene, gene_name)),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/%s.taxonomy.RAxML_info' % (
-                            gene, gene_name)),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/all_taxon.taxonomy' % gene),
-             os.path.join(options().__getattribute__('reference').path,
-                          'refpkg/%s.refpkg/species.mapping' % gene),
-             options().alignment_threshold,
-             0,
-             decomp_size,
-             total_taxa,
-             temp_dir+"/temp_file",
-             "tipp_%s" % gene,
-             output_directory+"/markers/",
-             extra))
+            total_taxa = 0
+            with open(os.path.join(options().__getattribute__('reference').path,
+                      'refpkg/%s.refpkg/%s.size' % (gene, gene_name)), 'r') as f:
+                total_taxa = int(f.readline().strip())
+            decomp_size = options().alignment_size
+            if (decomp_size > total_taxa):
+                decomp_size = int(total_taxa / 10)
+            cpus = options().cpu
+            if (len(frags) < cpus):
+                cpus = len(frags)
+            extra = ''
+            if options().dist is True:
+                extra = '-D'
+            if options().max_chunk_size is not None:
+                extra = extra + '-F %d' % options().max_chunk_size
+            if options().cutoff != 0:
+                extra = extra+" -C %f" % options().cutoff
+            print(
+                ('Cmd:\nrun_tipp.py -c %s --cpu %s -m %s -f %s -t %s -adt %s -a '
+                 '%s -r %s -tx %s -txm %s -at %0.2f -pt %0.2f -A %d -P %d -p %s '
+                 '-o %s -d %s %s') %
+                (options().config_file.name,
+                 cpus,
+                 options().molecule,
+                 temp_dir+"/%s.frags.fas.fixed" % gene,
+                 os.path.join(options().__getattribute__('reference').path,
+                              'refpkg/%s.refpkg/%s.taxonomy' % (gene, gene_name)),
+                 os.path.join(options().__getattribute__('reference').path,
+                              'refpkg/%s.refpkg/%s.tree' % (gene, gene_name)),
+                 os.path.join(options().__getattribute__('reference').path,
+                              'refpkg/%s.refpkg/%s.fasta' % (gene, gene_name)),
+                 os.path.join(options().__getattribute__('reference').path,
+                              'refpkg/%s.refpkg/%s.taxonomy.RAxML_info' % (
+                                gene, gene_name)),
+                 os.path.join(options().__getattribute__('reference').path,
+                              'refpkg/%s.refpkg/all_taxon.taxonomy' % gene),
+                 os.path.join(options().__getattribute__('reference').path,
+                              'refpkg/%s.refpkg/species.mapping' % gene),
+                 options().alignment_threshold,
+                 options().placement_threshold,
+                 decomp_size,
+                 total_taxa,
+                 temp_dir+"/temp_file",
+                 "tipp_%s" % gene,
+                 output_directory+"/markers/",
+                 extra))
+            os.system(
+                ('run_tipp.py -c %s --cpu %s -m %s -f %s -t %s -adt %s -a %s -r %s'
+                 ' -tx %s -txm %s -at %0.2f -pt %0.2f -A %d -P %d -p %s -o %s -d '
+                 '%s %s') %
+                (options().config_file.name,
+                cpus,
+                options().molecule,
+                temp_dir+"/%s.frags.fas.fixed" % gene,
+                os.path.join(options().__getattribute__('reference').path,
+                             'refpkg/%s.refpkg/%s.taxonomy' % (gene, gene_name)),
+                os.path.join(options().__getattribute__('reference').path,
+                             'refpkg/%s.refpkg/%s.tree' % (gene, gene_name)),
+                os.path.join(options().__getattribute__('reference').path,
+                             'refpkg/%s.refpkg/%s.fasta' % (gene, gene_name)),
+                os.path.join(options().__getattribute__('reference').path,
+                             'refpkg/%s.refpkg/%s.taxonomy.RAxML_info' % (
+                               gene, gene_name)),
+                os.path.join(options().__getattribute__('reference').path,
+                             'refpkg/%s.refpkg/all_taxon.taxonomy' % gene),
+                os.path.join(options().__getattribute__('reference').path,
+                             'refpkg/%s.refpkg/species.mapping' % gene),
+                options().alignment_threshold,
+                options().placement_threshold,
+                decomp_size,
+                total_taxa,
+                temp_dir+"/temp_file",
+                "tipp_%s" % gene,
+                 output_directory+"/markers/",
+                 extra))
+    for gene in marker_genes:
         if (not os.path.exists(output_directory +
                                "/markers/tipp_%s_classification.txt" % gene)):
             continue
-
         gene_classification = generate_classification(
             output_directory + "/markers/tipp_%s_classification.txt" % gene,
             options().placement_threshold)
@@ -672,7 +672,11 @@ def augment_parser():
         dest="genes", metavar="GENES",
         default='markers',
         help="Use markers or cogs genes [default: markers]")
-
+    tippGroup.add_argument(
+	"-rp", "--run_profiling", type=bool,
+	dest="run_profiling", metavar="FLAG",
+	default=False,
+	help="Only run classification without running TIPP [default: False]")
 
 def main():
     augment_parser()
